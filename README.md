@@ -16,6 +16,6 @@
 作りたいもののイメージを持てなかった点  
 
 
-参考にした web サイトなど  
+●参考にした web サイトなど  
 山﨑先生のYoutube  
 https://www.youtube.com/watch?v=D47A-t_Ng5s
