@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sample</title>
+</head>
+<body>
+    <button id="out">ログアウト</button>
+    <h1 id="status">ログイン</h1>
+    <!-- コンテンツ表示画面 -->
+    <div>
+        <div>
+            名前：<span id="uname"></span><br>
+            <img src="" id="prof">
+        </div>
+        <div>
+            <select id="title">
+                <option value="memo1">memo1</option>
+                <option value="memo2">memo2</option>
+                <option value="memo3">memo3</option>
+            </select>
+        </div>
+        <div>
+            <textarea id="text" cols="30" rows="10" placeholder="山﨑先生のyoutubeを参考にしました。難しかったです。"></textarea>
+            <button id="send">送信</button>
+        </div>
+
+    </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="module">
+//
+//
+//
+import { initializeApp } 
+    from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, onChildAdded, remove, onChildRemoved } 
+    from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
+    from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
+
+
+//
+//
+//
+const firebaseConfig = {
+    apiKey: "AIzaSyD1TkGlQbjGyWURBZhbYupCjbq0M03jMLc",
+    authDomain: "memo-236fa.firebaseapp.com",
+    projectId: "memo-236fa",
+    storageBucket: "memo-236fa.appspot.com",
+    messagingSenderId: "485899705226",
+    appId: "1:485899705226:web:2810070ed6f02ee9704673"
+  };
+  const app = initializeApp(firebaseConfig);
+
+
+//
+//
+//
+const db  = getDatabase(app); //RealtimeDBに接続
+
+
+//
+//
+//
+const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+const auth = getAuth();
+
+
+//
+//ログインしていれば処理する
+//
+onAuthStateChanged(auth,(user) => {
+    if (user) {
+        //
+        //
+        const uid = user.uid;
+        //
+        if (user !== null) {
+            user.providerData.forEach((profile) => {
+                //Login情報取得
+                $("#uname").text(profile.displayName);
+                $("#prof").attr("src",profile.photoURL);
+                // console.log("Sign-in provider: " + profile.providerId);
+                // console.log("Provider-specific UID: " + profile.uid);
+                // console.log("Email: " + profile.email);
+                // console.log("Photo URL: " + profile.photoURL);
+            });
+            $("#status").fadeOut(500);
+        }
+        
+        //データ登録(Click)
+        $("#send").on("click",function() {
+            const msg = {
+                title: $("#title").val(),
+                text:  $("#text").val()
+            }
+            const dbRef=  ref( db, "users/" +uid+"/memo/"+$("#title").val() );
+            set(dbRef, msg); //DBに値をセットする
+
+        });
+        //
+        $("#title").on("change",function(){
+            const dbRef=ref( db, "users/"+uid+"/memo/"+$(this).val() );
+            onValue(dbRef,function(data){
+                const msg = data.val();
+                console.log(msg);
+                //const key= data.key;
+                $("#text").val(msg.text);
+            });
+        });
+
+    } else {
+        _redirect(); //user is signd out
+    }
+});
+   
+
+//
+//ログアウト処理
+//
+$("#out").on("click", function (){
+    //
+    signOut(auth).then(() => {
+        //
+        _redirect();
+    }).catch((error) => {
+        //
+        console.error(error);
+    });    
+});
+
+
+//
+//ログイン画面へリダイレクト
+//
+function _redirect(){
+    location.href="login.html";
+}
+
+</script>
+
+
+
+</body>
